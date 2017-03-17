@@ -23,7 +23,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
@@ -63,7 +63,7 @@ public class Main extends Application implements Initializable{
 	@FXML
 	private AnchorPane pane;
 	@FXML
-	private BorderPane root;
+	private Pane root;
 	
 	
     private static Scene scene;
@@ -75,7 +75,7 @@ public class Main extends Application implements Initializable{
 	public void start(Stage primaryStage) {
 
          try {		
-			scene = new Scene((Parent) JfxUtils.loadFxml("Editeur_niveau.fxml"), 1366, 720);
+			scene = new Scene((Parent) JfxUtils.loadFxml("Editeur_niveau_v2.fxml"), 1366, 720);
 			
 			primaryStage.setScene(scene);
 			primaryStage.setWidth(1366);

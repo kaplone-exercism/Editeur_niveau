@@ -8,7 +8,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -16,19 +16,18 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
 
-<BorderPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1310.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Main">
-   <center>
-      <AnchorPane fx:id="pane" maxHeight="600.0" maxWidth="1000.0" prefHeight="600.0" prefWidth="1000.0" BorderPane.alignment="CENTER">
+
+<Pane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1310.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Main">
+   <HBox alignment="CENTER" prefHeight="700" prefWidth="1310">
+   <children>
+      <AnchorPane fx:id="pane" maxHeight="600.0" maxWidth="1000.0" prefHeight="600.0" prefWidth="1000.0" alignment="CENTER">
          <children>
             <Rectangle fx:id="background" arcHeight="5.0" arcWidth="5.0" fill="#d6ebff" focusTraversable="true" height="600.0" stroke="BLACK" strokeType="INSIDE" width="1000.0" />
          </children>
-         <BorderPane.margin>
-            <Insets top="30.0" />
-         </BorderPane.margin>
       </AnchorPane>
-   </center>
-   <right>
-      <VBox prefHeight="700.0" prefWidth="240.0" spacing="10.0" BorderPane.alignment="CENTER">
+   </children>
+   <children>
+      <VBox prefHeight="700.0" prefWidth="240.0" spacing="10.0" alignment="CENTER">
          <children>
             <HBox alignment="CENTER">
                <children>
@@ -108,5 +107,6 @@
             <Button fx:id="saveAsButton" mnemonicParsing="false" text="Enregistrer sous ..." />
          </children>
       </VBox>
-   </right>
-</BorderPane>
+   </children>
+   </HBox>
+</Pane>
