@@ -25,6 +25,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 public class Main extends Application implements Initializable{
@@ -121,6 +122,7 @@ public class Main extends Application implements Initializable{
 					 
 					 copie.setOnDragDetected(a -> controleMouvementDetected((Rectangle) a.getSource(), a, "mur_"));
 					 copie.setOnDragDone(a -> controleMouvementDone((Rectangle) a.getSource(), a));
+					 copie.setOnMouseClicked(a -> controleSelection((Rectangle) a.getSource()));
 		             break;
 		             
 		case "mur_" : Rectangle mur_ = (Rectangle) n;
@@ -150,6 +152,22 @@ public class Main extends Application implements Initializable{
   		               break;
   		}
 		
+		
+		
+	}
+	
+	public void controleSelection(Rectangle r){
+		
+		pane.getChildren().stream()
+		                  .filter(a -> a instanceof Rectangle && ! ((Rectangle) a).getFill().equals(Color.valueOf("#d6ebff")))
+		                  .forEach(a -> ((Rectangle)a).setFill(Color.BLACK));
+		
+		r.setFill(Color.CORAL);
+
+		x_textField.setText("" + r.getX());
+		y_textField.setText("" + r.getY());
+		h_textField.setText("" + r.getHeight());
+		l_textField.setText("" + r.getWidth());	
 		
 		
 	}
@@ -194,6 +212,8 @@ public class Main extends Application implements Initializable{
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
+		
+		background.setOnMouseClicked(a -> controleSelection(null));
 		
 		mur_vertical.setOnDragDetected(a -> controleMouvementDetected(mur_vertical, a, "mur"));
 		mur_vertical.setOnDragDone(a -> controleMouvementDone(mur_vertical, a));
