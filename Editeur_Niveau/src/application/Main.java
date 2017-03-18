@@ -174,11 +174,7 @@ public class Main extends Application implements Initializable{
 			y_textField.setText("");
 			h_textField.setText("");
 			l_textField.setText("");	
-		}
-
-		
-		
-		
+		}	
 	}
 	
     public void controleMouvementOver(Node n, DragEvent e){
