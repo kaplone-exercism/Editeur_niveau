@@ -61,7 +61,7 @@ public class Main extends Application implements Initializable{
 	private Button saveAsButton;
 	
 	@FXML
-	private AnchorPane pane;
+	private Pane pane;
 	@FXML
 	private Pane root;
 	
@@ -75,7 +75,7 @@ public class Main extends Application implements Initializable{
 	public void start(Stage primaryStage) {
 
          try {		
-			scene = new Scene((Parent) JfxUtils.loadFxml("Editeur_niveau_v2.fxml"), 1366, 720);
+			scene = new Scene((Parent) JfxUtils.loadFxml("Editeur_niveau_v3.fxml"), 1366, 720);
 			
 			primaryStage.setScene(scene);
 			primaryStage.setWidth(1366);
@@ -162,12 +162,21 @@ public class Main extends Application implements Initializable{
 		                  .filter(a -> a instanceof Rectangle && ! ((Rectangle) a).getFill().equals(Color.valueOf("#d6ebff")))
 		                  .forEach(a -> ((Rectangle)a).setFill(Color.BLACK));
 		
-		r.setFill(Color.CORAL);
+		if (r != null){
+			r.setFill(Color.CORAL);
+			x_textField.setText("" + r.getX());
+			y_textField.setText("" + r.getY());
+			h_textField.setText("" + r.getHeight());
+			l_textField.setText("" + r.getWidth());	
+		}
+		else {
+			x_textField.setText("");
+			y_textField.setText("");
+			h_textField.setText("");
+			l_textField.setText("");	
+		}
 
-		x_textField.setText("" + r.getX());
-		y_textField.setText("" + r.getY());
-		h_textField.setText("" + r.getHeight());
-		l_textField.setText("" + r.getWidth());	
+		
 		
 		
 	}
