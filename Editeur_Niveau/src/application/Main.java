@@ -3,6 +3,8 @@ package application;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import controlleurs.ClavierControleur;
+import controlleurs.DragAndDropControleur;
 import javafx.application.Application;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -10,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.stage.Stage;
+import utils.Contexte;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -67,12 +70,15 @@ public class Main extends Application implements Initializable{
 	
 	
     private static Scene scene;
-    private Rectangle copie;
-    private ImageView copie_i;
+        
+    private ClavierControleur clavierControleur;
+    private DragAndDropControleur dragAndDropControleur;
     
 	
 	@Override
 	public void start(Stage primaryStage) {
+		
+		System.out.println("start");
 
          try {		
 			scene = new Scene((Parent) JfxUtils.loadFxml("Editeur_niveau_v3.fxml"), 1366, 720);
@@ -85,152 +91,96 @@ public class Main extends Application implements Initializable{
 		} catch(Exception e) {
 			e.printStackTrace();
 		} 
+         
+        Contexte.setStage(primaryStage);
+        
 	}
 	
 	public static void main(String[] args) {
 		launch(args);
 	}
-	
-	public void controleMouvementDetected(Node n, MouseEvent e, String classe){
-		
-		n.setOpacity(0.5);
-        n.toFront();
-        n.setVisible(true);
-        n.relocate(
-                (int) (e.getSceneX() - n.getBoundsInLocal().getWidth() / 2),
-                (int) (e.getSceneY() - n.getBoundsInLocal().getHeight() / 2));
-        
-        Dragboard dragBoard = n.startDragAndDrop(TransferMode.ANY);			
-		ClipboardContent content = new ClipboardContent();	
-		content.putString(n.toString());
-		dragBoard.setContent(content);
-        
-		e.consume();
-		
-		switch (classe){
-		
-		case "mur" : Rectangle mur = (Rectangle) n;
-		             copie = new Rectangle();
-					 copie.setX(mur.getX());
-					 copie.setY(mur.getY());
-					 copie.setHeight(mur.getHeight());
-					 copie.setWidth(mur.getWidth());
-					 h_textField.setText("" + copie.getHeight());
-					 l_textField.setText("" + copie.getWidth());	
-					 pane.setOnDragOver(b -> controleMouvementOver(copie, b));
-					 pane.setOnDragDropped(b -> controleMouvementDrop(copie, b));
-					 
-					 copie.setOnDragDetected(a -> controleMouvementDetected((Rectangle) a.getSource(), a, "mur_"));
-					 copie.setOnDragDone(a -> controleMouvementDone((Rectangle) a.getSource(), a));
-					 copie.setOnMouseClicked(a -> controleSelection((Rectangle) a.getSource()));
-		             break;
-		             
-		case "mur_" : Rectangle mur_ = (Rectangle) n;
-        			 h_textField.setText("" + mur_.getHeight());
-        			 l_textField.setText("" + mur_.getWidth());	
-        			 pane.setOnDragOver(b -> controleMouvementOver(mur_, b));
-        			 pane.setOnDragDropped(b -> controleMouvementDrop(mur_, b));
-        			 break;
-		             
-		case "image" : ImageView imv = (ImageView) n;
-                       copie_i = new ImageView();
-		               copie_i.setX(imv.getX());
-		               copie_i.setY(imv.getY());
-		               copie_i.setFitHeight(imv.getFitHeight());
-		               copie_i.setFitWidth(imv.getFitWidth());
-		               copie_i.setImage(imv.getImage());
-		               pane.setOnDragOver(b -> controleMouvementOver(copie_i, b));
-					   pane.setOnDragDropped(b -> controleMouvementDrop(copie_i, b));
-					   
-					   copie_i.setOnDragDetected(a -> controleMouvementDetected((ImageView) a.getSource(), a, "image_"));
-					   copie_i.setOnDragDone(a -> controleMouvementDone((ImageView) a.getSource(), a));
-		               break;
-		               
-  		case "image_" : ImageView imv_ = (ImageView) n;
-  		               pane.setOnDragOver(b -> controleMouvementOver(imv_, b));
-  					   pane.setOnDragDropped(b -> controleMouvementDrop(imv_, b));
-  		               break;
-  		}
-		
-		
-		
-	}
-	
-	public void controleSelection(Rectangle r){
-		
-		pane.getChildren().stream()
-		                  .filter(a -> a instanceof Rectangle && ! ((Rectangle) a).getFill().equals(Color.valueOf("#d6ebff")))
-		                  .forEach(a -> ((Rectangle)a).setFill(Color.BLACK));
-		
-		if (r != null){
-			r.setFill(Color.CORAL);
-			x_textField.setText("" + r.getX());
-			y_textField.setText("" + r.getY());
-			h_textField.setText("" + r.getHeight());
-			l_textField.setText("" + r.getWidth());	
-		}
-		else {
-			x_textField.setText("");
-			y_textField.setText("");
-			h_textField.setText("");
-			l_textField.setText("");	
-		}	
-	}
-	
-    public void controleMouvementOver(Node n, DragEvent e){
-    	if (! pane.getChildren().contains(n)){
-			pane.getChildren().add(n);
-		}
-		
-		n.relocate(
-			(int) (e.getX() - n.getBoundsInLocal().getWidth() / 2),
-			(int) (e.getY() - n.getBoundsInLocal().getHeight() / 2));
-		
-		e.acceptTransferModes(TransferMode.ANY);
-
-		x_textField.setText("" + e.getX());
-		y_textField.setText("" + e.getY());
-		
-		e.consume();
-	}
-
-    public void controleMouvementDrop(Node n, DragEvent e){
-    	
-    	 /* data dropped */
-	        /* if there is a string data on dragboard, read it and use it */
-	        Dragboard db = e.getDragboard();
-	        boolean success = false;
-	        if (db.hasString()) {
-	           success = true;
-	        }
-	        /* let the source know whether the string was successfully 
-	         * transferred and used */
-	        e.setDropCompleted(success);
-	        
-	        e.consume();
-    }
-	
-	public void controleMouvementDone(Node n, Event e){
-		n.setOpacity(1);
-	    e.consume();
-	}
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
-		background.setOnMouseClicked(a -> controleSelection(null));
+		System.out.println("initialize");
 		
-		mur_vertical.setOnDragDetected(a -> controleMouvementDetected(mur_vertical, a, "mur"));
-		mur_vertical.setOnDragDone(a -> controleMouvementDone(mur_vertical, a));
+		 
+        Contexte.setMain(this);
+
+        clavierControleur = new ClavierControleur();
+        dragAndDropControleur = new DragAndDropControleur();
 		
-		mur_horizontal.setOnDragDetected(a -> controleMouvementDetected(mur_horizontal, a, "mur"));
-		mur_horizontal.setOnDragDone(a -> controleMouvementDone(mur_horizontal, a));
+		background.setOnMouseClicked(a -> dragAndDropControleur.controleSelection(null));
 		
-		personnage.setOnDragDetected(a -> controleMouvementDetected(personnage, a, "image"));
-		personnage.setOnDragDone(a -> controleMouvementDone(personnage, a));
+		mur_vertical.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(mur_vertical, a, "mur"));
+		mur_vertical.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(mur_vertical, a));
 		
-		goal.setOnDragDetected(a -> controleMouvementDetected(goal, a, "image"));
-		goal.setOnDragDone(a -> controleMouvementDone(goal, a));
+		mur_horizontal.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(mur_horizontal, a, "mur"));
+		mur_horizontal.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(mur_horizontal, a));
+		
+		personnage.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(personnage, a, "image"));
+		personnage.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(personnage, a));
+		
+		goal.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(goal, a, "image"));
+		goal.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(goal, a));
+		
+		h_textField.textProperty().addListener((other, old_value, new_value ) -> {
+			if (Contexte.getMur() != null && h_textField.isFocused()){
+				Contexte.getMur().setHeight(Double.parseDouble(new_value));
+			}
+		});
+		
+		l_textField.textProperty().addListener((other, old_value, new_value ) -> {
+			if (Contexte.getMur() != null && l_textField.isFocused()){
+				Contexte.getMur().setWidth(Double.parseDouble(new_value));
+			}
+		});
+		
+		x_textField.textProperty().addListener((other, old_value, new_value ) -> {
+			if (Contexte.getMur() != null && x_textField.isFocused()){
+				Contexte.getMur().setLayoutX(Double.parseDouble(new_value));
+			}
+		});
+		
+		y_textField.textProperty().addListener((other, old_value, new_value ) -> {
+			if (Contexte.getMur() != null && y_textField.isFocused()){
+				Contexte.getMur().setLayoutY(Double.parseDouble(new_value));
+			}
+		});
 
 	}
+	
+	public void setX_textFieldText(String s){
+		x_textField.setText(s);
+	}
+	public void setY_textFieldText(String s){
+		y_textField.setText(s);
+	}
+	public void setH_textFieldText(String s){
+		h_textField.setText(s);
+	}
+	public void setL_textFieldText(String s){
+		l_textField.setText(s);
+	}
+
+	public Pane getPane() {
+		return pane;
+	}
+
+	public ClavierControleur getClavierControleur() {
+		return clavierControleur;
+	}
+
+	public DragAndDropControleur getDragAndDropControleur() {
+		return dragAndDropControleur;
+	}
+
+	public Rectangle getBackground() {
+		return background;
+	}
+	
+	
+	
+	
 }
