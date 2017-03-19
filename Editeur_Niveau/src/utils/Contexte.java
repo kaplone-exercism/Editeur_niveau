@@ -8,7 +8,7 @@ public class Contexte {
 	
 	private static Main main;
 	private static Stage stage;
-	private static Rectangle mur;
+	private static Rectangle element;
 	
 	public static Main getMain() {
 		return main;
@@ -22,11 +22,11 @@ public class Contexte {
 	public static void setStage(Stage stage) {
 		Contexte.stage = stage;
 	}
-	public static Rectangle getMur() {
-		return mur;
+	public static Rectangle getElement() {
+		return element;
 	}
-	public static void setMur(Rectangle mur) {
-		Contexte.mur = mur;
+	public static void setElement(Rectangle mur) {
+		Contexte.element = mur;
 	}
 	
 }

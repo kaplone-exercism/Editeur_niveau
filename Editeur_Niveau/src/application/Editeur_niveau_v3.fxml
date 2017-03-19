@@ -29,7 +29,7 @@
 		<children>
          <Pane fx:id="pane" maxHeight="600.0" maxWidth="1000.0" prefHeight="600.0" prefWidth="1000.0">
             <children>
-               <Rectangle fx:id="background" arcHeight="5.0" arcWidth="5.0" fill="#d6ebff" height="600.0" stroke="BLACK" strokeType="INSIDE" width="1000.0" />
+               <Rectangle fx:id="background" arcHeight="5.0" arcWidth="5.0" fill="#ffffff" height="600.0" stroke="BLACK" strokeType="INSIDE" width="1000.0" />
             </children>
          </Pane>
 			<VBox alignment="CENTER" prefHeight="700.0" prefWidth="240.0" spacing="10.0">

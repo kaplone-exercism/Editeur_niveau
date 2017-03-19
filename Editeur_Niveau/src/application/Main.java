@@ -111,7 +111,7 @@ public class Main extends Application implements Initializable{
         clavierControleur = new ClavierControleur();
         dragAndDropControleur = new DragAndDropControleur();
 		
-		background.setOnMouseClicked(a -> dragAndDropControleur.controleSelection(null));
+		background.setOnMouseClicked(a -> dragAndDropControleur.controleSelection(null, ""));
 		
 		mur_vertical.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(mur_vertical, a, "mur"));
 		mur_vertical.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(mur_vertical, a));
@@ -119,33 +119,33 @@ public class Main extends Application implements Initializable{
 		mur_horizontal.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(mur_horizontal, a, "mur"));
 		mur_horizontal.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(mur_horizontal, a));
 		
-		personnage.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(personnage, a, "image"));
+		personnage.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(personnage, a, "image_p"));
 		personnage.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(personnage, a));
 		
 		goal.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(goal, a, "image"));
 		goal.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(goal, a));
 		
 		h_textField.textProperty().addListener((other, old_value, new_value ) -> {
-			if (Contexte.getMur() != null && h_textField.isFocused()){
-				Contexte.getMur().setHeight(Double.parseDouble(new_value));
+			if (Contexte.getElement() != null && h_textField.isFocused()){
+				Contexte.getElement().setHeight(Double.parseDouble(new_value));
 			}
 		});
 		
 		l_textField.textProperty().addListener((other, old_value, new_value ) -> {
-			if (Contexte.getMur() != null && l_textField.isFocused()){
-				Contexte.getMur().setWidth(Double.parseDouble(new_value));
+			if (Contexte.getElement() != null && l_textField.isFocused()){
+				Contexte.getElement().setWidth(Double.parseDouble(new_value));
 			}
 		});
 		
 		x_textField.textProperty().addListener((other, old_value, new_value ) -> {
-			if (Contexte.getMur() != null && x_textField.isFocused()){
-				Contexte.getMur().setLayoutX(Double.parseDouble(new_value));
+			if (Contexte.getElement() != null && x_textField.isFocused()){
+				Contexte.getElement().setLayoutX(Double.parseDouble(new_value));
 			}
 		});
 		
 		y_textField.textProperty().addListener((other, old_value, new_value ) -> {
-			if (Contexte.getMur() != null && y_textField.isFocused()){
-				Contexte.getMur().setLayoutY(Double.parseDouble(new_value));
+			if (Contexte.getElement() != null && y_textField.isFocused()){
+				Contexte.getElement().setLayoutY(Double.parseDouble(new_value));
 			}
 		});
 
@@ -178,6 +178,22 @@ public class Main extends Application implements Initializable{
 
 	public Rectangle getBackground() {
 		return background;
+	}
+
+	public TextField getX_textField() {
+		return x_textField;
+	}
+
+	public TextField getY_textField() {
+		return y_textField;
+	}
+
+	public TextField getH_textField() {
+		return h_textField;
+	}
+
+	public TextField getL_textField() {
+		return l_textField;
 	}
 	
 	
