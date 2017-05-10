@@ -3,6 +3,9 @@ package application;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import java.io.File;
+import javafx.stage.FileChooser;
+
 import controlleurs.ClavierControleur;
 import controlleurs.DragAndDropControleur;
 import javafx.application.Application;
@@ -73,6 +76,8 @@ public class Main extends Application implements Initializable{
         
     private ClavierControleur clavierControleur;
     private DragAndDropControleur dragAndDropControleur;
+    
+    private File file;
     
 	
 	@Override
@@ -148,7 +153,35 @@ public class Main extends Application implements Initializable{
 				Contexte.getElement().setLayoutY(Double.parseDouble(new_value));
 			}
 		});
+	
+		openButton.setOnAction(a -> on_select_file_button());
+		saveButton.setOnAction(a -> System.out.println("save"));
+		saveAsButton.setOnAction(a -> System.out.println("save as"));
 
+	}
+	
+    protected File chooseExport(){
+		
+		Stage newStage = new Stage();
+		
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Fichier à importer");
+		fileChooser.getExtensionFilters().addAll(
+		         new FileChooser.ExtensionFilter("conf Shape In The Mazes", "*.sitm"));
+		File selectedFile = fileChooser.showOpenDialog(newStage);
+		if (selectedFile != null) {
+			 return selectedFile;
+		}
+		else {
+			 return (File) null;
+		}
+		
+	}
+    
+	public void on_select_file_button(){
+		
+		file = chooseExport();
+		System.out.println(file.getName());
 	}
 	
 	public void setX_textFieldText(String s){
