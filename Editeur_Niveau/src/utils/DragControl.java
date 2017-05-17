@@ -177,6 +177,7 @@ public class DragControl {
 	}
 
 	public void controleMouvementDone(Node n, Event e) {
+		System.out.println("dragControl");
 		n.setOpacity(1);
 		e.consume();
 	}

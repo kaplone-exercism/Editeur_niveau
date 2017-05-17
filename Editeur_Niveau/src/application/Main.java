@@ -1,9 +1,18 @@
 package application;
 
 import java.net.URL;
+import java.nio.CharBuffer;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
-
+import java.util.stream.Stream;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringReader;
+
 import javafx.stage.FileChooser;
 
 import controlleurs.ClavierControleur;
@@ -15,6 +24,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.stage.Stage;
+import models.Mur;
 import utils.Contexte;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -79,11 +89,11 @@ public class Main extends Application implements Initializable{
     
     private File file;
     
+    private List<Rectangle> murs;
+    
 	
 	@Override
 	public void start(Stage primaryStage) {
-		
-		System.out.println("start");
 
          try {		
 			scene = new Scene((Parent) JfxUtils.loadFxml("Editeur_niveau_v3.fxml"), 1366, 720);
@@ -108,8 +118,7 @@ public class Main extends Application implements Initializable{
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
-		System.out.println("initialize");
-		
+		murs = new ArrayList<>();
 		 
         Contexte.setMain(this);
 
@@ -154,9 +163,9 @@ public class Main extends Application implements Initializable{
 			}
 		});
 	
-		openButton.setOnAction(a -> on_select_file_button());
-		saveButton.setOnAction(a -> System.out.println("save"));
-		saveAsButton.setOnAction(a -> System.out.println("save as"));
+		openButton.setOnAction(a -> on_select_file_button("open"));
+		saveButton.setOnAction(a -> on_select_file_button("save"));
+		saveAsButton.setOnAction(a -> on_select_file_button("save as"));
 
 	}
 	
@@ -165,9 +174,45 @@ public class Main extends Application implements Initializable{
 		Stage newStage = new Stage();
 		
 		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Fichier à exporter");
+		fileChooser.getExtensionFilters().addAll(
+		         new FileChooser.ExtensionFilter("Shape In The Mazes", "*.sitm"));
+		File selectedFile = fileChooser.showSaveDialog(newStage);
+		if (selectedFile != null) {
+			 return selectedFile;
+		}
+		else {
+			 return (File) null;
+		}
+		
+	}
+    
+    protected File chooseExportAs(){
+		
+		Stage newStage = new Stage();
+		
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Fichier à exporter");
+		fileChooser.getExtensionFilters().addAll(
+		         new FileChooser.ExtensionFilter("Shape In The Mazes", "*.sitm"));
+		File selectedFile = fileChooser.showSaveDialog(newStage);
+		if (selectedFile != null) {
+			 return selectedFile;
+		}
+		else {
+			 return (File) null;
+		}
+		
+	}
+    
+    protected File chooseImport(){
+		
+		Stage newStage = new Stage();
+		
+		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Fichier à importer");
 		fileChooser.getExtensionFilters().addAll(
-		         new FileChooser.ExtensionFilter("conf Shape In The Mazes", "*.sitm"));
+		         new FileChooser.ExtensionFilter("Shape In The Mazes", "*.sitm"));
 		File selectedFile = fileChooser.showOpenDialog(newStage);
 		if (selectedFile != null) {
 			 return selectedFile;
@@ -178,9 +223,46 @@ public class Main extends Application implements Initializable{
 		
 	}
     
-	public void on_select_file_button(){
+	public void on_select_file_button(String effet){
 		
-		file = chooseExport();
+		switch (effet) {
+		case "open" : file = chooseImport();
+						try (Stream<String> stream = Files.lines(file.toPath())) {				
+							stream.forEach(System.out::println);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+		              break;
+		case "save" : file = chooseExport();
+			try {
+				FileWriter fw = new FileWriter(file);
+				fw.write(String.format("[Practice %s]\n", file.getName().split(".sitm")[0].replaceAll(" ", "_")));
+				fw.write("\n");
+				fw.write("Goal = 900, 300\n");
+				fw.write("Infos = \"Avec les flèches du clavier ou avec les touches ZQSD, faire passer le rectangle par la porte pour aller toucher le drapeau\"; 500; 300; 300\n");
+				fw.write("\n");
+				fw.write("Mur = VERTICAL,    5,       0,        	0,   600\n");
+				fw.write("Mur = VERTICAL,    5,     995,        	0,   600\n");
+				fw.write("Mur = HORIZONTAL,  5,       0,        	0,  1000\n");
+				fw.write("Mur = HORIZONTAL,  5,     595,        	0,  1000\n");
+				fw.write("\n");
+				
+				for (Rectangle r : murs){
+					if (r.getHeight() > r.getWidth()){
+						fw.write(String.format("Mur = VERTICAL,   %d,     %d,          %d,   %d\n", Math.round(r.getWidth()), Math.round(r.getHeight()), Math.round(r.getLayoutX()), Math.round(r.getLayoutY())));					}
+					else {
+						fw.write(String.format("Mur = HORIZONTAL,   %d,     %d,          %d,   %d\n", Math.round(r.getHeight()), Math.round(r.getWidth()), Math.round(r.getLayoutY()), Math.round(r.getLayoutX())));
+					}
+				}
+				fw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        			  break;  
+		case "save as" : file = chooseExportAs();
+		              break; 
+		}
+		
 		System.out.println(file.getName());
 	}
 	
@@ -229,7 +311,41 @@ public class Main extends Application implements Initializable{
 		return l_textField;
 	}
 	
-	
-	
-	
+	public void ajoutMur(Rectangle m){
+		
+		boolean nouveau = false;
+		
+		if (murs.isEmpty()){
+			murs.add(m);
+		}
+		else {
+			for (Rectangle r : murs){
+				if (m.getLayoutX() == r.getLayoutX()
+				&&  m.getLayoutY() == r.getLayoutY()
+				&&  m.getWidth() == r.getWidth()
+				&&  m.getHeight() == r.getHeight()){
+					r.setWidth(m.getWidth());
+					r.setHeight(m.getHeight());
+					r.setLayoutX(m.getLayoutX());
+					r.setLayoutY(m.getLayoutY());
+					nouveau = false;
+					break;
+				}
+				else {
+					nouveau = true;
+				}
+			}
+			
+			if (nouveau) {
+				murs.add(m);
+			}
+		}
+
+		System.out.println(m);
+		System.out.println(m.getLayoutX());
+		System.out.println(m.getLayoutY());
+		System.out.println(m.getWidth());
+		System.out.println(m.getHeight());
+		
+	}
 }

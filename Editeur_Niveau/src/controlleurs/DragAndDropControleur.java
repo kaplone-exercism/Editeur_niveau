@@ -62,6 +62,7 @@ public class DragAndDropControleur {
 					 copie.setY(mur.getY());
 					 copie.setHeight(mur.getHeight());
 					 copie.setWidth(mur.getWidth());
+					  
 					 main.setH_textFieldText("" + copie.getHeight());
 					 main.setL_textFieldText("" + copie.getWidth());	
 					 main.getPane().setOnDragOver(b -> controleMouvementOver(copie, b));
@@ -224,6 +225,7 @@ public class DragAndDropControleur {
     	
     	if(n instanceof Rectangle){
      	   controleSelection((Rectangle) n, type);
+     	   main.ajoutMur((Rectangle) n);
         }
     	else {
     		controleSelection(null, type);
@@ -244,6 +246,7 @@ public class DragAndDropControleur {
     }
 	
 	public void controleMouvementDone(Node n, Event e){
+		//System.out.println("drag&dropControleur");
 		n.setOpacity(1);
 	    e.consume();
 	}
@@ -252,6 +255,4 @@ public class DragAndDropControleur {
 		return murSelectionne;
 	}
 	
-	
-
 }

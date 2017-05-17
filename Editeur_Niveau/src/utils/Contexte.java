@@ -27,6 +27,5 @@ public class Contexte {
 	}
 	public static void setElement(Rectangle mur) {
 		Contexte.element = mur;
-	}
-	
+	}	
 }
