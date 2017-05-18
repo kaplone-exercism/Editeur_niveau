@@ -58,12 +58,12 @@
                   <children>
       							<ImageView fx:id="personnage" fitHeight="39.0" fitWidth="78.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
       								<image>
-      									<Image url="@../../images/personnage.png" />
+      									<Image url="personnage.png" />
       								</image>
       							</ImageView>
       							<ImageView fx:id="goal" fitHeight="74.0" fitWidth="78.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
       								<image>
-      									<Image url="@../../images/goal.png" />
+      									<Image url="goal.png" />
       								</image>
       							</ImageView>
                   </children>
