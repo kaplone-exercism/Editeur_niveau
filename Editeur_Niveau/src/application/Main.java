@@ -2,9 +2,11 @@ package application;
 
 import java.net.URL;
 import java.nio.CharBuffer;
+import java.nio.channels.ShutdownChannelGroupException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Stream;
 import java.io.File;
@@ -24,6 +26,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.stage.Stage;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.*;
 import models.Mur;
 import utils.Contexte;
 import javafx.scene.Node;
@@ -170,21 +174,13 @@ public class Main extends Application implements Initializable{
 	}
 	
     protected File chooseExport(){
-		
-		Stage newStage = new Stage();
-		
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Fichier à exporter");
-		fileChooser.getExtensionFilters().addAll(
-		         new FileChooser.ExtensionFilter("Shape In The Mazes", "*.sitm"));
-		File selectedFile = fileChooser.showSaveDialog(newStage);
-		if (selectedFile != null) {
-			 return selectedFile;
-		}
-		else {
-			 return (File) null;
-		}
-		
+    	
+    	if (file != null){
+    		return file;
+    	}
+    	else {
+    		return chooseExportAs();
+    	}		
 	}
     
     protected File chooseExportAs(){
@@ -196,13 +192,8 @@ public class Main extends Application implements Initializable{
 		fileChooser.getExtensionFilters().addAll(
 		         new FileChooser.ExtensionFilter("Shape In The Mazes", "*.sitm"));
 		File selectedFile = fileChooser.showSaveDialog(newStage);
-		if (selectedFile != null) {
-			 return selectedFile;
-		}
-		else {
-			 return (File) null;
-		}
 		
+		return selectedFile;		
 	}
     
     protected File chooseImport(){
@@ -223,47 +214,96 @@ public class Main extends Application implements Initializable{
 		
 	}
     
+    protected void ajoutMurDepuisLignesauvegarde(String l){
+    		
+    	if (l.split(",")[0].split("=")[1].trim().equals("VERTICAL")){
+    		Rectangle temp = new Rectangle(Double.parseDouble(l.split(",")[1].trim()),
+    									   Double.parseDouble(l.split(",")[2].trim()));
+    		temp.setLayoutX(Double.parseDouble(l.split(",")[3].trim()));
+    		temp.setLayoutY(Double.parseDouble(l.split(",")[4].trim()));
+			murs.add(temp);				
+		}
+    	else if (l.split(",")[0].split("=")[1].trim().equals("HORIZONTAL")){
+    		Rectangle temp = new Rectangle(Double.parseDouble(l.split(",")[2].trim()),
+					   					   Double.parseDouble(l.split(",")[1].trim()));
+			murs.add(temp);	
+			
+			temp.setLayoutX(Double.parseDouble(l.split(",")[4].trim()));
+    		temp.setLayoutY(Double.parseDouble(l.split(",")[3].trim()));
+}
+    }
+    
 	public void on_select_file_button(String effet){
 		
 		switch (effet) {
 		case "open" : file = chooseImport();
-						try (Stream<String> stream = Files.lines(file.toPath())) {				
-							stream.forEach(System.out::println);
+		                murs.clear();
+		                //pane.getChildren().clear();
+						try (Stream<String> stream = Files.lines(file.toPath())) {	
+							stream.filter(a -> a.startsWith("Mur") && Double.parseDouble(a.split(",")[1].trim()) > 5)
+							      .forEach(b -> ajoutMurDepuisLignesauvegarde(b));
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
+						DragAndDropControleur dd = new DragAndDropControleur();
+						for (Rectangle rectangle : murs) {
+							pane.getChildren().add(rectangle);
+							pane.setOnDragOver(b -> dd.controleMouvementOver(rectangle, b));
+							pane.setOnDragDropped(b -> dd.controleMouvementDrop(rectangle, b, "mur"));
+							 
+							rectangle.setOnDragDetected(a -> dd.controleMouvementDetected((Rectangle) a.getSource(), a, "mur_"));
+							rectangle.setOnDragDone(a -> dd.controleMouvementDone((Rectangle) a.getSource(), a));
+							rectangle.setOnMouseClicked(a -> dd.controleSelection((Rectangle) a.getSource(), "mur"));
+							rectangle.setOnKeyPressed(a -> getClavierControleur().controleClavier((Rectangle) a.getSource(), a));
+						}
+						
 		              break;
 		case "save" : file = chooseExport();
-			try {
-				FileWriter fw = new FileWriter(file);
-				fw.write(String.format("[Practice %s]\n", file.getName().split(".sitm")[0].replaceAll(" ", "_")));
-				fw.write("\n");
-				fw.write("Goal = 900, 300\n");
-				fw.write("Infos = \"Avec les flèches du clavier ou avec les touches ZQSD, faire passer le rectangle par la porte pour aller toucher le drapeau\"; 500; 300; 300\n");
-				fw.write("\n");
-				fw.write("Mur = VERTICAL,    5,       0,        	0,   600\n");
-				fw.write("Mur = VERTICAL,    5,     995,        	0,   600\n");
-				fw.write("Mur = HORIZONTAL,  5,       0,        	0,  1000\n");
-				fw.write("Mur = HORIZONTAL,  5,     595,        	0,  1000\n");
-				fw.write("\n");
-				
-				for (Rectangle r : murs){
-					if (r.getHeight() > r.getWidth()){
-						fw.write(String.format("Mur = VERTICAL,   %d,     %d,          %d,   %d\n", Math.round(r.getWidth()), Math.round(r.getHeight()), Math.round(r.getLayoutX()), Math.round(r.getLayoutY())));					}
-					else {
-						fw.write(String.format("Mur = HORIZONTAL,   %d,     %d,          %d,   %d\n", Math.round(r.getHeight()), Math.round(r.getWidth()), Math.round(r.getLayoutY()), Math.round(r.getLayoutX())));
-					}
-				}
-				fw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		              ecrireFichier();
         			  break;  
 		case "save as" : file = chooseExportAs();
+		              ecrireFichier();
 		              break; 
 		}
 		
 		System.out.println(file.getName());
+	}
+	
+	protected void ecrireFichier(){
+		
+		if (! file.getName().endsWith(".sitm")){
+			if (file.getName().contains(".")){
+				file = new File(file.getPath().split("\\.")[0] + ".sitm");
+			}
+			else {
+				file = new File(file.getPath() + ".sitm");
+			}
+		}
+		
+		try {
+			FileWriter fw = new FileWriter(file);
+			fw.write(String.format("[Practice %s]\n", file.getName().split(".sitm")[0].replaceAll(" ", "_")));
+			fw.write("\n");
+			fw.write("Goal = 900, 300\n");
+			fw.write("Infos = \"Avec les flèches du clavier ou avec les touches ZQSD, faire passer le rectangle par la porte pour aller toucher le drapeau\"; 500; 300; 300\n");
+			fw.write("\n");
+			fw.write("Mur = VERTICAL,    5,       0,        	0,   600\n");
+			fw.write("Mur = VERTICAL,    5,     995,        	0,   600\n");
+			fw.write("Mur = HORIZONTAL,  5,       0,        	0,  1000\n");
+			fw.write("Mur = HORIZONTAL,  5,     595,        	0,  1000\n");
+			fw.write("\n");
+			
+			for (Rectangle r : murs){
+				if (r.getHeight() > r.getWidth()){
+					fw.write(String.format("Mur = VERTICAL,   %d,     %d,          %d,   %d\n", Math.round(r.getWidth()), Math.round(r.getHeight()), Math.round(r.getLayoutX()), Math.round(r.getLayoutY())));					}
+				else {
+					fw.write(String.format("Mur = HORIZONTAL,   %d,     %d,          %d,   %d\n", Math.round(r.getHeight()), Math.round(r.getWidth()), Math.round(r.getLayoutY()), Math.round(r.getLayoutX())));
+				}
+			}
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void setX_textFieldText(String s){
@@ -339,13 +379,6 @@ public class Main extends Application implements Initializable{
 			if (nouveau) {
 				murs.add(m);
 			}
-		}
-
-		System.out.println(m);
-		System.out.println(m.getLayoutX());
-		System.out.println(m.getLayoutY());
-		System.out.println(m.getWidth());
-		System.out.println(m.getHeight());
-		
+		}		
 	}
 }
