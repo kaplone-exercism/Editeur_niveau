@@ -295,9 +295,12 @@ public class Main extends Application implements Initializable{
 			
 			for (Rectangle r : murs){
 				if (r.getHeight() > r.getWidth()){
-					fw.write(String.format("Mur = VERTICAL,   %d,     %d,          %d,   %d\n", Math.round(r.getWidth()), Math.round(r.getHeight()), Math.round(r.getLayoutX()), Math.round(r.getLayoutY())));					}
+					//fw.write(String.format("Mur = VERTICAL,   %d,     %d,          %d,   %d\n", Math.round(r.getWidth()), Math.round(r.getHeight()), Math.round(r.getLayoutX()), Math.round(r.getLayoutY())));					}
+					fw.write(String.format("Mur = VERTICAL,   %d,     %d,          %d,   %d\n", Math.round(r.getWidth()), Math.round(r.getLayoutX()), Math.round(r.getLayoutY()), Math.round(r.getLayoutY() + r.getHeight())));					}
+				
 				else {
-					fw.write(String.format("Mur = HORIZONTAL,   %d,     %d,          %d,   %d\n", Math.round(r.getHeight()), Math.round(r.getWidth()), Math.round(r.getLayoutY()), Math.round(r.getLayoutX())));
+					//fw.write(String.format("Mur = HORIZONTAL,   %d,     %d,          %d,   %d\n", Math.round(r.getHeight()), Math.round(r.getWidth()), Math.round(r.getLayoutY()), Math.round(r.getLayoutX())));
+					fw.write(String.format("Mur = HORIZONTAL,   %d,     %d,          %d,   %d\n", Math.round(r.getHeight()), Math.round(r.getLayoutY()), Math.round(r.getLayoutX()), Math.round(r.getLayoutX() + r.getWidth())));
 				}
 			}
 			fw.close();
