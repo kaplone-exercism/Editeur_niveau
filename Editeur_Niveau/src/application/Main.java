@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Stream;
+
+import javax.imageio.ImageIO;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -20,6 +23,7 @@ import javafx.stage.FileChooser;
 import controlleurs.ClavierControleur;
 import controlleurs.DragAndDropControleur;
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -34,10 +38,12 @@ import utils.RestAccess;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -354,7 +360,7 @@ public class Main extends Application implements Initializable{
 		
 		String res = "";
 		
-		res += String.format("\n\n[%s]\n", nomTextField.getText().trim().length() > 0 ? nomTextField.getText().trim() : "test" );
+		res += String.format("\n\n[%s]\n", nomTextField.getText().trim().length() > 0 ? nomTextField.getText().trim().replace(" ", "_") : "test" );
 		res += "\n";
 		res += "Goal = 900, 300\n";
 		res += String.format("Infos = \"%s\"; 500; 300; 300\n", prezTextField.getText());
@@ -382,8 +388,22 @@ public class Main extends Application implements Initializable{
 	}
 	
 	private void export(){
+		
 		RestAccess.connect();
-		System.out.println(RestAccess.ajouter(nouveauNiveau()));
+		
+		try {
+			String home =  System.getProperty("user.home");
+			SnapshotParameters sp = new SnapshotParameters();
+			WritableImage image = pane.snapshot(sp, null);
+			File file = new File(home, "tmp_0001.png");
+            ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
+            System.out.println(RestAccess.ajouter(nomTextField.getText().trim().length() > 0 ? nomTextField.getText().trim().replace(" ", "_") : "test", file));
+            System.out.println(RestAccess.ajouter(nouveauNiveau()));
+        } catch (IOException e) {
+            // TODO: handle exception here
+        }
+		
+		
 	}
 	
 	public void setX_textFieldText(String s){

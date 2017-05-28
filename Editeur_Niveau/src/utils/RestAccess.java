@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.InvalidKeyException;
@@ -14,11 +15,17 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import models.Settings;
@@ -92,7 +99,6 @@ public class RestAccess {
 		
         requestPost.addHeader("monToken", new String(encryptedText));
         requestPost.setHeader("Accept", "text/plain");
-        requestPost.setHeader("Content-type", "text/plain");
     	
     	HttpResponse response = null;
     	
@@ -118,17 +124,29 @@ public class RestAccess {
     	
 	}
 	
-
-	
-	public static String ajouter (String c) {
-		
-		System.out.println(String.format("%s/ajout", adresse));
+	public static String ajouter (String c, File f) {
 		
 		requestPost = new HttpPost(String.format("%s/ajout", adresse));
+		
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+		builder.addBinaryBody("picture", f, ContentType.DEFAULT_BINARY, c);
+		
+		HttpEntity entity = builder.build();
+		requestPost.setEntity(entity);
+		
+    	return traitementReponsePost();
+	}
+	
+    public static String ajouter (String c) {
 
+		requestPost = new HttpPost(String.format("%s/ajout", adresse));
+		requestPost.setHeader("Content-type", "text/plain");
+		
 		StringEntity se = new StringEntity(c, "UTF-8");
 		requestPost.setEntity(se);
 		
     	return traitementReponsePost();
 	}
+	
 }
