@@ -30,6 +30,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.Alert.*;
 import models.Mur;
 import utils.Contexte;
+import utils.RestAccess;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -74,11 +75,18 @@ public class Main extends Application implements Initializable{
 	private TextField l_textField;
 	
 	@FXML
+	private TextField nomTextField;
+	@FXML
+	private TextField prezTextField;
+	
+	@FXML
 	private Button openButton;
 	@FXML
 	private Button saveButton;
 	@FXML
 	private Button saveAsButton;
+	@FXML
+	private Button exportButton;
 	
 	@FXML
 	private Pane pane;
@@ -100,11 +108,11 @@ public class Main extends Application implements Initializable{
 	public void start(Stage primaryStage) {
 
          try {		
-			scene = new Scene((Parent) JfxUtils.loadFxml("Editeur_niveau_v3.fxml"), 1366, 720);
+			scene = new Scene((Parent) JfxUtils.loadFxml("Editeur_niveau_v3.fxml"), 1366, 760);
 			
 			primaryStage.setScene(scene);
 			primaryStage.setWidth(1366);
-			primaryStage.setHeight(720);
+			primaryStage.setHeight(760);
 			primaryStage.show();
 
 		} catch(Exception e) {
@@ -170,6 +178,7 @@ public class Main extends Application implements Initializable{
 		openButton.setOnAction(a -> on_select_file_button("open"));
 		saveButton.setOnAction(a -> on_select_file_button("save"));
 		saveAsButton.setOnAction(a -> on_select_file_button("save as"));
+		exportButton.setOnAction(a -> export());
 
 	}
 	
@@ -189,6 +198,7 @@ public class Main extends Application implements Initializable{
 		
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Fichier à exporter");
+		fileChooser.setInitialFileName(nomTextField.getText());
 		fileChooser.getExtensionFilters().addAll(
 		         new FileChooser.ExtensionFilter("Shape In The Mazes", "*.sitm"));
 		File selectedFile = fileChooser.showSaveDialog(newStage);
@@ -218,19 +228,50 @@ public class Main extends Application implements Initializable{
     		
     	if (l.split(",")[0].split("=")[1].trim().equals("VERTICAL")){
     		Rectangle temp = new Rectangle(Double.parseDouble(l.split(",")[1].trim()),
-    									   Double.parseDouble(l.split(",")[2].trim()));
-    		temp.setLayoutX(Double.parseDouble(l.split(",")[3].trim()));
-    		temp.setLayoutY(Double.parseDouble(l.split(",")[4].trim()));
+    									   Double.parseDouble(l.split(",")[4].trim()) - Double.parseDouble(l.split(",")[3].trim()));
+    		temp.setLayoutX(Double.parseDouble(l.split(",")[2].trim()));
+    		temp.setLayoutY(Double.parseDouble(l.split(",")[3].trim()));
+    		temp.setFill(Color.DARKCYAN);
+    		
 			murs.add(temp);				
 		}
     	else if (l.split(",")[0].split("=")[1].trim().equals("HORIZONTAL")){
-    		Rectangle temp = new Rectangle(Double.parseDouble(l.split(",")[2].trim()),
-					   					   Double.parseDouble(l.split(",")[1].trim()));
-			murs.add(temp);	
-			
-			temp.setLayoutX(Double.parseDouble(l.split(",")[4].trim()));
-    		temp.setLayoutY(Double.parseDouble(l.split(",")[3].trim()));
-}
+    		Rectangle temp = new Rectangle(Double.parseDouble(l.split(",")[4].trim()) - Double.parseDouble(l.split(",")[3].trim()),
+    									   Double.parseDouble(l.split(",")[1].trim()));
+			temp.setLayoutX(Double.parseDouble(l.split(",")[3].trim()));
+    		temp.setLayoutY(Double.parseDouble(l.split(",")[2].trim()));
+    		temp.setFill(Color.DARKCYAN);
+    		
+    		murs.add(temp);
+        } 	
+    }
+    
+    protected void ajoutPersoDepuisLignesauvegarde(String l){
+    	
+    	Rectangle temp = new Rectangle(Double.parseDouble(l.split(",")[3].trim()),
+				                       Double.parseDouble(l.split(",")[4].trim()));
+    	temp.setLayoutX(Double.parseDouble(l.split(",")[1].trim()));
+    	temp.setLayoutY(Double.parseDouble(l.split(",")[2].trim()));
+    	temp.setFill(Color.DARKGOLDENROD);  
+
+    	pane.getChildren().add(temp);
+    	
+    	dragAndDropControleur = new DragAndDropControleur();
+    	temp.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(temp, a, "image_p_"));
+    	temp.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(temp, a));
+    }
+    
+    protected void ajoutGoalDepuisLignesauvegarde(String l){
+    	
+    	ImageView temp = new ImageView("goal.png");
+    	temp.setLayoutX(Double.parseDouble(l.split(",")[0].split("=")[1].trim()));
+    	temp.setLayoutY(Double.parseDouble(l.split(",")[1].trim()));
+    	
+    	pane.getChildren().add(temp);
+    	
+    	dragAndDropControleur = new DragAndDropControleur();
+    	temp.setOnDragDetected(a -> dragAndDropControleur.controleMouvementDetected(temp, a, "image_"));
+    	temp.setOnDragDone(a -> dragAndDropControleur.controleMouvementDone(temp, a));
     }
     
 	public void on_select_file_button(String effet){
@@ -238,7 +279,27 @@ public class Main extends Application implements Initializable{
 		switch (effet) {
 		case "open" : file = chooseImport();
 		                murs.clear();
-		                //pane.getChildren().clear();
+		                pane.getChildren().clear();
+		                
+		                Rectangle fond = new Rectangle(1000, 600);
+		                fond.setFill(Color.WHITE);
+
+		                pane.getChildren().add(fond);
+		                
+		                try (Stream<String> stream = Files.lines(file.toPath())) {	
+							stream.filter(a -> a.startsWith("Perso"))
+							      .forEach(b -> ajoutPersoDepuisLignesauvegarde(b));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+		                
+		                try (Stream<String> stream = Files.lines(file.toPath())) {	
+							stream.filter(a -> a.startsWith("Goal"))
+							      .forEach(b -> ajoutGoalDepuisLignesauvegarde(b));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+		                
 						try (Stream<String> stream = Files.lines(file.toPath())) {	
 							stream.filter(a -> a.startsWith("Mur") && Double.parseDouble(a.split(",")[1].trim()) > 5)
 							      .forEach(b -> ajoutMurDepuisLignesauvegarde(b));
@@ -282,31 +343,47 @@ public class Main extends Application implements Initializable{
 		
 		try {
 			FileWriter fw = new FileWriter(file);
-			fw.write(String.format("[Practice %s]\n", file.getName().split(".sitm")[0].replaceAll(" ", "_")));
-			fw.write("\n");
-			fw.write("Goal = 900, 300\n");
-			fw.write("Infos = \"Avec les flèches du clavier ou avec les touches ZQSD, faire passer le rectangle par la porte pour aller toucher le drapeau\"; 500; 300; 300\n");
-			fw.write("\n");
-			fw.write("Mur = VERTICAL,    5,       0,        	0,   600\n");
-			fw.write("Mur = VERTICAL,    5,     995,        	0,   600\n");
-			fw.write("Mur = HORIZONTAL,  5,       0,        	0,  1000\n");
-			fw.write("Mur = HORIZONTAL,  5,     595,        	0,  1000\n");
-			fw.write("\n");
-			
-			for (Rectangle r : murs){
-				if (r.getHeight() > r.getWidth()){
-					//fw.write(String.format("Mur = VERTICAL,   %d,     %d,          %d,   %d\n", Math.round(r.getWidth()), Math.round(r.getHeight()), Math.round(r.getLayoutX()), Math.round(r.getLayoutY())));					}
-					fw.write(String.format("Mur = VERTICAL,   %d,     %d,          %d,   %d\n", Math.round(r.getWidth()), Math.round(r.getLayoutX()), Math.round(r.getLayoutY()), Math.round(r.getLayoutY() + r.getHeight())));					}
-				
-				else {
-					//fw.write(String.format("Mur = HORIZONTAL,   %d,     %d,          %d,   %d\n", Math.round(r.getHeight()), Math.round(r.getWidth()), Math.round(r.getLayoutY()), Math.round(r.getLayoutX())));
-					fw.write(String.format("Mur = HORIZONTAL,   %d,     %d,          %d,   %d\n", Math.round(r.getHeight()), Math.round(r.getLayoutY()), Math.round(r.getLayoutX()), Math.round(r.getLayoutX() + r.getWidth())));
-				}
-			}
+			fw.write(nouveauNiveau());
 			fw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private String nouveauNiveau(){
+		
+		String res = "";
+		
+		res += String.format("\n\n[%s]\n", nomTextField.getText().trim().length() > 0 ? nomTextField.getText().trim() : "test" );
+		res += "\n";
+		res += "Goal = 900, 300\n";
+		res += String.format("Infos = \"%s\"; 500; 300; 300\n", prezTextField.getText());
+		res += "\n";
+		res += "Mur = VERTICAL,    5,       0,        	0,   600\n";
+		res += "Mur = VERTICAL,    5,     995,        	0,   600\n";
+		res += "Mur = HORIZONTAL,  5,       0,        	0,  1000\n";
+		res += "Mur = HORIZONTAL,  5,     595,        	0,  1000\n";
+		res += "\n";
+		
+		for (Rectangle r : murs){
+			if (r.getHeight() > r.getWidth()){
+				res += String.format("Mur = VERTICAL,   %d,     %d,          %d,   %d\n", Math.round(r.getWidth()), Math.round(r.getLayoutX()), Math.round(r.getLayoutY()), Math.round(r.getLayoutY() + r.getHeight()));					}
+			
+			else {
+				res += String.format("Mur = HORIZONTAL,   %d,     %d,          %d,   %d\n", Math.round(r.getHeight()), Math.round(r.getLayoutY()), Math.round(r.getLayoutX()), Math.round(r.getLayoutX() + r.getWidth()));
+			}
+		}
+		
+		res += "\n";
+		res += String.format("Perso = BLACK, %d, %d, %d, %d", Math.round(personnage.getLayoutX()), Math.round(personnage.getLayoutY()), Math.round(personnage.getFitWidth()), Math.round(personnage.getFitHeight()));
+		
+		return res;
+		
+	}
+	
+	private void export(){
+		RestAccess.connect();
+		System.out.println(RestAccess.ajouter(nouveauNiveau()));
 	}
 	
 	public void setX_textFieldText(String s){

@@ -4,4 +4,11 @@
   <artifactId>Editeur_niveau_v2</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>SITM_editeur niveau</name>
+  <dependencies>
+    <dependency>
+	  <groupId>org.apache.httpcomponents</groupId>
+	  <artifactId>httpclient</artifactId>
+	  <version>4.5.2</version>
+    </dependency>
+  </dependencies>
 </project>
